@@ -1,0 +1,7 @@
+{
+    "jscodehints.detectedExclusions": [
+        "/Users/agea/git/falling/platforms/ios/www/service-worker.js",
+        "jquery.js",
+        "/Users/agea/git/falling/platforms/ios/www/lib/Matter/examples/broadphase.js"
+    ]
+}
