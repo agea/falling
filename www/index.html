@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="starter">
 
 <head>
   <meta charset="utf-8">
@@ -15,10 +15,8 @@
         .catch(err => console.log('Error', err));
     }
   </script>
-<!--
   <link href="lib/ionic/css/ionic.css" rel="stylesheet">
   <link href="css/style.css" rel="stylesheet">
--->
   <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
     <link href="css/ionic.app.css" rel="stylesheet">
     -->
@@ -41,7 +39,7 @@
   <link rel="stylesheet" href="lib/Matter/demo/css/style.css" type="text/css">
 </head>
 
-<body ng-app="starter" class="mobile nav-links">
+<body ng-controller="HomeCtrl as hc" class="mobile nav-links">
   <div class="container">
     <div id="canvas-container"></div>
   </div>

@@ -1,4 +1,4 @@
-function falling() {
+function falling($ionicPopup) {
 
   // Matter aliases
   var Engine = Matter.Engine,
@@ -9,15 +9,22 @@ function falling() {
     MouseConstraint = Matter.MouseConstraint;
 
   var Demo = {};
-  var gc=0,obs = 0;
+
+  var gc = 0,
+    obs = 1,
+    score = 0;
+
   var _engine,
     wBounds,
     _sceneWidth,
     _sceneHeight,
     _deviceOrientationEvent;
 
-  _sceneWidth = document.documentElement.clientWidth;
-  _sceneHeight = document.documentElement.clientHeight;
+  var _sceneWidth = document.documentElement.clientWidth;
+  var _sceneHeight = document.documentElement.clientHeight;
+
+  var scale = _sceneWidth / 375;
+
 
   Demo.init = function () {
     var canvasContainer = document.getElementById('canvas-container');
@@ -65,7 +72,7 @@ function falling() {
 
     Demo.reset();
 
-    var ball = Bodies.circle(_sceneWidth / 2, _sceneHeight / 2, 25, {
+    var ball = Bodies.circle(_sceneWidth / 2, _sceneHeight / 2, 25 * scale, {
       friction: 0,
       restitution: 0.75,
       mass: 0.01
@@ -94,8 +101,14 @@ function falling() {
           World.remove(_world, o);
           addObstacles(ball);
         } else if (o.render.fillStyle == '#000000' || o.render.fillStyle == '#ff9000') {
-          alert("Game over");
-          window.location.reload();
+          World.remove(_world, ball);
+          $ionicPopup.alert({
+            title: 'Game Over',
+            template: 'Score: ' + score
+          }).then(function () {
+            window.location.reload();
+          });
+
         }
       }
     });
@@ -169,60 +182,65 @@ function falling() {
     World.clear(_world);
     Engine.clear(_engine);
 
+    var s = 20 * scale;
     wBounds = [
-      Bodies.rectangle(_sceneWidth * 0.5, -1, _sceneWidth, 50, {
+      Bodies.rectangle(_sceneWidth * 0.5, -1 * scale, _sceneWidth, s, {
         isStatic: true
       }),
-      Bodies.rectangle(_sceneWidth * 0.5, _sceneHeight + 1, _sceneWidth, 50, {
+      Bodies.rectangle(_sceneWidth * 0.5, _sceneHeight + 1 * scale, _sceneWidth, s, {
         isStatic: true
       }),
-      Bodies.rectangle(_sceneWidth + 1, _sceneHeight * 0.5, 50, _sceneHeight, {
+      Bodies.rectangle(_sceneWidth + 1 * scale, _sceneHeight * 0.5, s, _sceneHeight, {
         isStatic: true
       }),
-      Bodies.rectangle(-1, _sceneHeight * 0.5, 50, _sceneHeight, {
+      Bodies.rectangle(-1 * scale, _sceneHeight * 0.5, s, _sceneHeight, {
         isStatic: true
       })
     ];
-    World.addBody(_world, wBounds[0]);
-    World.addBody(_world, wBounds[1]);
-    World.addBody(_world, wBounds[2]);
-    World.addBody(_world, wBounds[3]);
+
+    for (var i = 0; i < wBounds.length; i++) {
+      wBounds[i].render.strokeStyle = "rgba(0,0,0,0)";
+      wBounds[i].render.fillStyle = "rgba(0,0,0,0)";
+      World.addBody(_world, wBounds[i]);
+    }
   };
 
   Demo.init();
 
   function addObstacles(ball) {
-      obs--;
-    if (obs-->0)
-      return;
+
+    obs--;
+    gc--;
+
+    if (gc <= 0) {
+      score++;
+      gc = score;
     }
-    gc++;
 
     var half = _sceneHeight / 2;
     var x, y;
 
-    var c = 0;
-
-    while (c < gc) {
+    while (obs < score) {
       while (!x || !y) {
-        x = Math.random() * (_sceneWidth - 100);
-        y = Math.random() * (_sceneHeight - 100);
-        if (Math.sqrt(Math.pow(x - ball.position.x, 2) + Math.pow(y - ball.position.y, 2)) < 100) {
+        x = Math.random() * (_sceneWidth - 100 * scale);
+        y = Math.random() * (_sceneHeight - 100 * scale);
+        if (Math.sqrt(Math.pow(x - ball.position.x, 2) + Math.pow(y - ball.position.y, 2)) < 150 * scale) {
           x = undefined;
           y = undefined;
         }
       }
-      var rect = Bodies.rectangle(x + 50, y + 50, 50, 50, {
+
+      var poly = Bodies.polygon(x + 50, y + 50, 3, 25 * scale, {
         isStatic: true
       });
 
       var color = Math.random() > 0.5 ? '#ff9000' : '#000000';
-      rect.render.fillStyle = color;
-      rect.render.strokeStyle = color;
+      poly.render.fillStyle = color;
+      poly.render.strokeStyle = color;
 
-      World.add(_engine.world, rect);
+      World.add(_engine.world, poly);
       obs++;
-      c++;
+
       x = undefined;
       y = undefined;
     }
