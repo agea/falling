@@ -104,7 +104,7 @@ function falling($ionicPopup) {
           World.remove(_world, ball);
           $ionicPopup.alert({
             title: 'Game Over',
-            template: 'Score: ' + score
+            okText: 'Score: ' + score
           }).then(function () {
             window.location.reload();
           });
@@ -213,7 +213,11 @@ function falling($ionicPopup) {
     gc--;
 
     if (gc <= 0) {
-      score++;
+      if (!score){
+        score=1;
+      } else {
+        score = score*2;
+      }
       gc = score;
     }
 
@@ -231,12 +235,13 @@ function falling($ionicPopup) {
       }
 
       var poly = Bodies.polygon(x + 50, y + 50, 3, 25 * scale, {
-        isStatic: true
+        isStatic: true,
       });
 
       var color = Math.random() > 0.5 ? '#ff9000' : '#000000';
       poly.render.fillStyle = color;
       poly.render.strokeStyle = color;
+      Matter.Body.setAngle(poly,2*Math.PI*Math.random());
 
       World.add(_engine.world, poly);
       obs++;
