@@ -1,12 +1,13 @@
 function falling($ionicPopup) {
-
   // Matter aliases
   var Engine = Matter.Engine,
     World = Matter.World,
     Bodies = Matter.Bodies,
+    Render = Matter.Render,
     Composites = Matter.Composites,
     Common = Matter.Common,
     MouseConstraint = Matter.MouseConstraint;
+
 
   var Demo = {};
 
@@ -26,17 +27,74 @@ function falling($ionicPopup) {
   var scale = _sceneWidth / 375;
 
 
+  Demo.create = function (options) {
+    var defaults = {
+      isManual: false,
+      sceneName: 'mixed',
+      sceneEvents: []
+    };
+
+    return Common.extend(defaults, options);
+  };
+
+  var demo = Demo.create();
+
   Demo.init = function () {
     var canvasContainer = document.getElementById('canvas-container');
-    _engine = Engine.create(canvasContainer, {
-      render: {
-        options: {
-          wireframes: false,
-          showAngleIndicator: false,
-          showDebug: false
-        }
+
+    // get container element for the canvas
+    demo.container = canvasContainer;
+
+    var options = {
+      wireframes: false,
+      positionIterations: 6,
+      velocityIterations: 4,
+      enableSleeping: false,
+      metrics: {
+        extended: true
       }
+    };
+
+    // create an example engine (see /examples/engine.js)
+    demo.engine = Engine.create(options);
+
+
+    // run the engine
+    demo.runner = Engine.run(demo.engine);
+
+    // create a debug renderer
+    demo.render = Render.create({
+      element: demo.container,
+      engine: demo.engine
     });
+
+
+    var renderOptions = demo.render.options;
+    renderOptions.wireframes = false;
+    renderOptions.hasBounds = false;
+    renderOptions.showDebug = false;
+    renderOptions.showBroadphase = false;
+    renderOptions.showBounds = false;
+    renderOptions.showVelocity = false;
+    renderOptions.showCollisions = false;
+    renderOptions.showAxes = false;
+    renderOptions.showPositions = false;
+    renderOptions.showAngleIndicator = false;
+    renderOptions.showIds = false;
+    renderOptions.showShadows = false;
+    renderOptions.showVertexNumbers = false;
+    renderOptions.showConvexHulls = false;
+    renderOptions.showInternalEdges = false;
+    renderOptions.showSeparations = false;
+    renderOptions.background = '#fff';
+
+
+    // run the renderer
+    Render.run(demo.render);
+
+    _engine = demo.engine;
+
+
 
     setTimeout(function () {
       if (navigator.accelerometer) {
@@ -104,7 +162,7 @@ function falling($ionicPopup) {
           World.remove(_world, ball);
           $ionicPopup.alert({
             title: 'Game Over',
-            okText: 'Score: ' + score
+            okText: 'Score: ' + (score * 2 - gc - 1)
           }).then(function () {
             window.location.reload();
           });
@@ -126,8 +184,8 @@ function falling($ionicPopup) {
     _sceneHeight = document.documentElement.clientHeight;
 
     var boundsMax = _engine.world.bounds.max,
-      renderOptions = _engine.render.options,
-      canvas = _engine.render.canvas;
+      renderOptions = demo.render.options,
+      canvas = demo.render.canvas;
 
     boundsMax.x = _sceneWidth;
     boundsMax.y = _sceneHeight;
@@ -213,10 +271,10 @@ function falling($ionicPopup) {
     gc--;
 
     if (gc <= 0) {
-      if (!score){
-        score=1;
+      if (!score) {
+        score = 1;
       } else {
-        score = score*2;
+        score = score * 2;
       }
       gc = score;
     }
@@ -238,10 +296,10 @@ function falling($ionicPopup) {
         isStatic: true,
       });
 
-      var color = Math.random() > 0.5 ? '#ff9000' : '#000000';
+      var color = gc == score ? '#ff9000' : '#000000';
       poly.render.fillStyle = color;
       poly.render.strokeStyle = color;
-      Matter.Body.setAngle(poly,2*Math.PI*Math.random());
+      Matter.Body.setAngle(poly, 2 * Math.PI * Math.random());
 
       World.add(_engine.world, poly);
       obs++;
