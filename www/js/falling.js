@@ -24,6 +24,7 @@ function falling($ionicPopup) {
   var _sceneWidth = document.documentElement.clientWidth;
   var _sceneHeight = document.documentElement.clientHeight;
 
+  var canvas = document.getElementById('main-canvas');
   var scale = _sceneWidth / 375;
 
 
@@ -40,13 +41,8 @@ function falling($ionicPopup) {
   var demo = Demo.create();
 
   Demo.init = function () {
-    var canvasContainer = document.getElementById('canvas-container');
-
-    // get container element for the canvas
-    demo.container = canvasContainer;
 
     var options = {
-      wireframes: false,
       positionIterations: 6,
       velocityIterations: 4,
       enableSleeping: false,
@@ -58,16 +54,14 @@ function falling($ionicPopup) {
     // create an example engine (see /examples/engine.js)
     demo.engine = Engine.create(options);
 
-
     // run the engine
     demo.runner = Engine.run(demo.engine);
 
     // create a debug renderer
     demo.render = Render.create({
-      element: demo.container,
+      canvas: canvas,
       engine: demo.engine
     });
-
 
     var renderOptions = demo.render.options;
     renderOptions.wireframes = false;
@@ -94,26 +88,20 @@ function falling($ionicPopup) {
 
     _engine = demo.engine;
 
-
-
     setTimeout(function () {
       if (navigator.accelerometer) {
-        console.log("Accelerometer! :)");
         var watchID = navigator.accelerometer.watchAcceleration(function (acceleration) {
           Demo.updateGravityFromAcceleration(acceleration);
         }, null, {
           frequency: 20
         });
       } else {
-        console.log("Device orientation :(");
+        console.log("Device orientation");
         window.addEventListener('deviceorientation', function (event) {
           _deviceOrientationEvent = event;
           Demo.updateGravity(event);
         }, true);
       }
-      var runner = Engine.run(_engine);
-      // pass through runner as timing for debug rendering
-      _engine.metrics.timing = runner;
       Demo.updateScene();
     }, 800);
 
@@ -122,8 +110,6 @@ function falling($ionicPopup) {
       Demo.updateScene();
     }, false);
   };
-
-
 
   Demo.mixed = function () {
     var _world = _engine.world;
@@ -148,7 +134,7 @@ function falling($ionicPopup) {
       }
     };
 
-    document.getElementById('canvas-container').onclick = ball.invertColor;
+    canvas.onclick = ball.invertColor;
 
     Matter.Events.on(_engine, 'collisionEnd', function (e) {
       var p = [e.pairs[0].bodyA, e.pairs[0].bodyB];
